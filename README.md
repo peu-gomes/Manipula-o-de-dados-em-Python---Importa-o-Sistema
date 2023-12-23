@@ -4,7 +4,7 @@
 
 ## Descrição
 
-Bem-vindo ao VersatoCopyCarga, o seu assistente contábil digital! Nosso projeto tem como objetivo simplificar e automatizar a integração de informações contábeis, unindo os setores fiscal, folha de pagamento e clientes. O VersatoCopyCarga facilita a consolidação desses dados em um formato padronizado, economizando tempo e minimizando erros.
+Este projeto tem como objetivo simplificar e automatizar a integração de informações contábeis, unindo os setores fiscal, folha de pagamento e clientes. O VersatoCopyCarga facilita a consolidação desses dados em um formato padronizado, economizando tempo e minimizando erros.
 
 ## Funcionalidades
 
