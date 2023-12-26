@@ -2,11 +2,12 @@ import pandas as pd
 
 # Leia o arquivo Excel e armazene os dados em dois DataFrames
 unificada_aba_recebidas_df = pd.read_excel('09.2023 - Impostos e Retidos.xlsx', sheet_name=0, header=8)
-unificada_aba_devolucoes_df = pd.read_excel('09.2023 - Impostos e Retidos.xlsx', sheet_name=0, header=8)
+unificada_aba_devolucoes_df = pd.read_excel('09.2023 - Impostos e Retidos.xlsx', sheet_name=2, header=6)
 
 # Manipulação dos dados gerais da aba recebidas
 # Exclua as linhas em branco da primeira coluna
 unificada_aba_recebidas_apagar_zaradas_df = unificada_aba_recebidas_df.dropna(subset=['Prestador'])
+unificada_aba_devolucoes_apagar_zaradas_df = unificada_aba_devolucoes_df.dropna(subset=['Prestador'])
 
 # Lista de colunas para excluir
 unificada_aba_recebidas_colunas_para_excluir_df = ['CNPJ Prestador', 'Simples',
@@ -16,25 +17,41 @@ unificada_aba_recebidas_colunas_para_excluir_df = ['CNPJ Prestador', 'Simples',
 'Descontos', 'Valor Líquido', 'P.A IR', 'P.A PCC', 'P.A INSS',
 'P.A ISS', 'Descrição']
 
+unificada_aba_devolucoes_colunas_para_excluir_df = ['CNPJ Prestador',
+'Nota Referenciada','Pagamentos', 'Valor Líquido', 'Centro de Custo', 'Descrição']
+
 # Exclua as colunas especificadas na lista anterior
 unificada_aba_recebidas_colunas_excluir_colunas_df = unificada_aba_recebidas_apagar_zaradas_df.drop(columns=unificada_aba_recebidas_colunas_para_excluir_df)
+unificada_aba_devolucoes_colunas_excluir_colunas_df = unificada_aba_devolucoes_apagar_zaradas_df.drop(columns=unificada_aba_devolucoes_colunas_para_excluir_df)
 
 # Adicione novas colunas
 unificada_aba_recebidas_colunas_excluir_colunas_df['CÓD'] = ""
 unificada_aba_recebidas_colunas_excluir_colunas_df['Débito'] = ""
 unificada_aba_recebidas_colunas_excluir_colunas_df['Crédito'] = ""
 unificada_aba_recebidas_colunas_excluir_colunas_df['Histórico'] = ""
-unificada_aba_recebidas_colunas_excluir_colunas_df['H1'] = ""
+unificada_aba_recebidas_colunas_excluir_colunas_df['H1'] = " "
+
+unificada_aba_devolucoes_colunas_excluir_colunas_df['CÓD'] = ""
+unificada_aba_devolucoes_colunas_excluir_colunas_df['Débito'] = ""
+unificada_aba_devolucoes_colunas_excluir_colunas_df['Crédito'] = ""
+unificada_aba_devolucoes_colunas_excluir_colunas_df['Histórico'] = ""
+unificada_aba_devolucoes_colunas_excluir_colunas_df['H1'] = "S/"
 
 #alterar nome de variavel para finalizar a manipulacao geral (foi idicionado como a versao 2)
 unificada_aba_recebidas_v2_df = unificada_aba_recebidas_colunas_excluir_colunas_df
-
+unificada_aba_devolucoes_v2_df = unificada_aba_devolucoes_colunas_excluir_colunas_df
+#print(unificada_aba_devolucoes_v2_df.to_string())
 #manipulação notas
 
 notas_columns_para_exclusive = ['Valor IRRF', 'Valor CSRF', 'Valor INSS', 'Valor ISS', 'Caução']
 notas = unificada_aba_recebidas_v2_df.drop(columns=notas_columns_para_exclusive)
 notas = notas.rename(columns={'Valor Bruto': 'Valor'})
-#print(notas.to_string())
+notas = notas[['CÓD', 'Débito', 'Crédito', 'Emissão', 'Valor', 'Histórico', 'Tipo', 'H1', 'Nº Nota Fiscal', 'Prestador']]
+notas['H1'] = 'Nº'
+notas['Crédito'] = '2.01.02.01.0001'
+
+notas['Valor'] = notas['Valor'].round(2)
+#notas['Histórico'] = '=CONCATENAR(H2;" ";I2;" ";J2;" ";K2)'
 
 #manipulação impostos
 #manipulação irrf
@@ -100,22 +117,42 @@ impostos['Histórico'] = ""
 
 # Selecionar colunas relevantes
 impostos = impostos[['CÓD', 'Débito', 'Crédito', 'Emissão', 'Valor', 'Histórico', 'H1', 'Tipo', 'Nº Nota Fiscal', 'Prestador']]
+impostos['Valor'] = impostos['Valor'].round(2)
+#impostos['Histórico'] = '=CONCATENAR(H2;" ";I2;" ";J2;" ";K2)'
 
 #manipulação caucao
+
 caucao_colunas_para_excluir = ['Valor Bruto', 'Valor IRRF', 'Valor CSRF', 'Valor INSS', 'Valor ISS']
 caucao = unificada_aba_recebidas_v2_df.drop(columns=caucao_colunas_para_excluir)
+#print(caucao.to_string())
 caucao = caucao.dropna(subset='Caução')
 caucao = caucao[caucao['Caução'] != 0]
 caucao = caucao.rename(columns={'Caução': 'Valor'})
+caucao = caucao[['CÓD', 'Débito', 'Crédito', 'Emissão', 'Valor', 'Histórico', 'H1', 'Tipo', 'Nº Nota Fiscal', 'Prestador']]
+caucao['Valor'] = caucao['Valor'].round(2)
+caucao['H1'] = 'RETENÇÃO CONTRATUAL S/'
+#caucao['Histórico'] = '=CONCATENAR(H2;" ";I2;" ";J2;" ";K2)'
 
 #manipulação devolucao
-#unificada_aba_devolucoes_df
+#print(unificada_aba_devolucoes_df.to_string())
+#devolucoes_colunas_para_excluir = ['CNPJ Prestador', 'Nota Referenciada', 'Pagamentos', 'Valor Líquido', 'Centro de Custo', 'Descrição']
+#devolucoes = unificada_aba_devolucoes_v2_df.drop(columns=devolucoes_colunas_para_excluir)
+
+
+devolucoes = unificada_aba_devolucoes_v2_df.rename(columns={'Valor Bruto': 'Valor'})
+#print(devolucoes.to_string())
+
+devolucoes = devolucoes[['CÓD', 'Débito', 'Crédito', 'Emissão', 'Valor', 'Histórico', 'Natureza Da OP.', 'H1', 'Tipo', 'Nº Nota Fiscal', 'Prestador']]
+devolucoes['Valor'] = devolucoes['Valor'].round(2)
+#caucao['Histórico'] = '=CONCATENAR(H2;" ";I2;" ";J2;" ";K2)'
 
 #exportar arquivo unificada
 #pasta
 writer = pd.ExcelWriter(r"C:\Users\ph6br\Desktop\unificada\v2\exportação_unificada.xlsx", engine='xlsxwriter')
+
 notas.to_excel(writer, sheet_name='Notas')
 impostos.to_excel(writer, sheet_name='Impostos Retidos')
 caucao.to_excel(writer, sheet_name='Retenções Contratuais')
-#devolucao.to_excel(writer, sheet_name='Devoluções')
+devolucoes.to_excel(writer, sheet_name='Devoluções')
+
 writer.close()
