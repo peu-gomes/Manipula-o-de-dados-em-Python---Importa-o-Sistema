@@ -1,10 +1,8 @@
 import pandas as pd
-#from interface import caminho_unificada_interface
 import tkinter as tk
-from tkinter import filedialog
-import datetime
-from tkinter import messagebox
-from tkinter import ttk
+from tkinter import filedialog, messagebox
+from datetime import datetime
+
 
 def selecionar_arquivo():
     global caminho_unificada_interface
@@ -12,7 +10,8 @@ def selecionar_arquivo():
     btn_baixar_unificada["state"] = tk.NORMAL
 
 def selecionar_pasta_baixar():
-    agora = datetime.datetime.now()
+    
+    agora = datetime.now()
 
     # Formata o carimbo de data/hora para ser usado no nome do arquivo
     timestamp = agora.strftime("%Y%m%d_%H%M%S")
@@ -21,49 +20,96 @@ def selecionar_pasta_baixar():
     nome_arquivo = f'exportação_unificada_{timestamp}.xlsx'
     caminho_unificada_baixar = filedialog.askdirectory()
     caminho_unificada_baixar_concat = caminho_unificada_baixar + '/' + nome_arquivo
-
-
+    
     # Leia o arquivo Excel e armazene os dados em dois DataFrames
-    unificada_aba_recebidas_df = pd.read_excel(caminho_unificada_interface, sheet_name=0, header=8)
-    unificada_aba_devolucoes_df = pd.read_excel(caminho_unificada_interface, sheet_name=2, header=6)
-
+    unificada_aba_recebidas_df = pd.read_excel(caminho_unificada_interface, sheet_name=0)
+    unificada_aba_devolucoes_df = pd.read_excel(caminho_unificada_interface, sheet_name=2)
+    
+    #ok
+    
+    
     # Manipulação dos dados gerais da aba recebidas
     # Exclua as linhas em branco da primeira coluna
-    unificada_aba_recebidas_apagar_zaradas_df = unificada_aba_recebidas_df.dropna(subset=['Prestador'])
-    unificada_aba_devolucoes_apagar_zaradas_df = unificada_aba_devolucoes_df.dropna(subset=['Prestador'])
+    unificada_aba_recebidas_apagar_zaradas_df = unificada_aba_recebidas_df.dropna(subset=['Unnamed: 0'])
+    unificada_aba_devolucoes_apagar_zaradas_df = unificada_aba_devolucoes_df.dropna(subset=['Unnamed: 0'])
 
+    unificada_aba_recebidas_apagar_zaradas_df.columns = unificada_aba_recebidas_apagar_zaradas_df.iloc[0]
+    unificada_aba_devolucoes_apagar_zaradas_df.columns = unificada_aba_devolucoes_apagar_zaradas_df.iloc[0]
+
+    unificada_aba_recebidas_apagar_zaradas_df = unificada_aba_recebidas_apagar_zaradas_df[1:]
+    unificada_aba_devolucoes_apagar_zaradas_df = unificada_aba_devolucoes_apagar_zaradas_df[1:]
+
+    #print(unificada_aba_recebidas_apagar_zaradas_df)
+    #if (unificada_aba_devolucoes_apagar_zaradas_df == 0).all().all():
+    #    print('zerado')
+    #else:
+    #    print(unificada_aba_devolucoes_apagar_zaradas_df)
+        
+    #ok    
+        
+    
     # Lista de colunas para excluir
-    unificada_aba_recebidas_colunas_para_excluir_df = ['CNPJ Prestador', 'Simples',
-    'Serviço', 'Pagamentos', 'IRRF', 'CSRF',
-    'INSS', 'ISS', 'Cód IRRF', 'Cód PCC',
-    'Base Cal. INSS', 'Base Cal. ISS',
-    'Descontos', 'Valor Líquido', 'P.A IR', 'P.A PCC', 'P.A INSS',
-    'P.A ISS', 'Descrição']
+    #unificada_aba_recebidas_colunas_para_excluir_df = ['CNPJ Prestador', 'Simples',
+    #'Serviço', 'Pagamentos', 'IRRF', 'CSRF',
+    #'INSS', 'ISS', 'Cód IRRF', 'Cód PCC',
+    #'Base Cal. INSS', 'Base Cal. ISS',
+    #'Descontos', 'Valor Líquido', 'P.A IR', 'P.A PCC', 'P.A INSS',
+    #'P.A ISS', 'Descrição']
 
-    unificada_aba_devolucoes_colunas_para_excluir_df = ['CNPJ Prestador',
-    'Nota Referenciada','Pagamentos', 'Valor Líquido', 'Centro de Custo', 'Descrição']
+    #unificada_aba_devolucoes_colunas_para_excluir_df = ['CNPJ Prestador',
+    #'Nota Referenciada','Pagamentos', 'Valor Líquido', 'Centro de Custo', 'Descrição']
 
+    colunas_desejadas_recebidas = ['Prestador', 'Tipo', 'Nº Nota Fiscal', 'Emissão', 'Valor Bruto', 'Valor IRRF', 'Valor CSRF', 'Valor INSS', 'Valor ISS', 'Caução']
+    unificada_aba_recebidas_colunas_desejadas_df = unificada_aba_recebidas_apagar_zaradas_df[colunas_desejadas_recebidas]
+    
+    colunas_desejadas_devolucoes = ['Prestador', 'Tipo', 'Nº Nota Fiscal', 'Natureza Da OP.', 'Nota Referenciada', 'Emissão',  'Valor Bruto']
+    unificada_aba_devolucoes_colunas_desejadas_df = unificada_aba_devolucoes_apagar_zaradas_df[colunas_desejadas_devolucoes]
+
+    #print(unificada_aba_recebidas_colunas_desejadas_df)
+    #if (unificada_aba_devolucoes_colunas_desejadas_df == 0).all().all():
+    #    print('zerado')
+    #else:
+    #    print(unificada_aba_devolucoes_colunas_desejadas_df)
+    
+    #ok
+    
     # Exclua as colunas especificadas na lista anterior
-    unificada_aba_recebidas_colunas_excluir_colunas_df = unificada_aba_recebidas_apagar_zaradas_df.drop(columns=unificada_aba_recebidas_colunas_para_excluir_df)
-    unificada_aba_devolucoes_colunas_excluir_colunas_df = unificada_aba_devolucoes_apagar_zaradas_df.drop(columns=unificada_aba_devolucoes_colunas_para_excluir_df)
+    #unificada_aba_recebidas_colunas_excluir_colunas_df = unificada_aba_recebidas_apagar_zaradas_df.drop(columns=unificada_aba_recebidas_apagar_zaradas_df)
+    #unificada_aba_devolucoes_colunas_excluir_colunas_df = unificada_aba_devolucoes_apagar_zaradas_df.drop(columns=unificada_aba_devolucoes_colunas_para_excluir_df)
+    
+    # Crie cópias explícitas dos DataFrames para evitar SettingWithCopyWarning
+    unificada_aba_recebidas_colunas_desejadas_df = unificada_aba_recebidas_colunas_desejadas_df.copy()
+    unificada_aba_devolucoes_colunas_desejadas_df = unificada_aba_devolucoes_colunas_desejadas_df.copy()
 
     # Adicione novas colunas
-    unificada_aba_recebidas_colunas_excluir_colunas_df['CÓD'] = ""
-    unificada_aba_recebidas_colunas_excluir_colunas_df['Débito'] = ""
-    unificada_aba_recebidas_colunas_excluir_colunas_df['Crédito'] = ""
-    unificada_aba_recebidas_colunas_excluir_colunas_df['Histórico'] = ""
-    unificada_aba_recebidas_colunas_excluir_colunas_df['H1'] = " "
+    unificada_aba_recebidas_colunas_desejadas_df['CÓD'] = ""
+    unificada_aba_recebidas_colunas_desejadas_df['Débito'] = ""
+    unificada_aba_recebidas_colunas_desejadas_df['Crédito'] = ""
+    unificada_aba_recebidas_colunas_desejadas_df['Histórico'] = ""
+    unificada_aba_recebidas_colunas_desejadas_df['H1'] = " "
 
-    unificada_aba_devolucoes_colunas_excluir_colunas_df['CÓD'] = ""
-    unificada_aba_devolucoes_colunas_excluir_colunas_df['Débito'] = ""
-    unificada_aba_devolucoes_colunas_excluir_colunas_df['Crédito'] = ""
-    unificada_aba_devolucoes_colunas_excluir_colunas_df['Histórico'] = ""
-    unificada_aba_devolucoes_colunas_excluir_colunas_df['H1'] = "S/"
-
+    unificada_aba_devolucoes_colunas_desejadas_df['CÓD'] = ""
+    unificada_aba_devolucoes_colunas_desejadas_df['Débito'] = ""
+    unificada_aba_devolucoes_colunas_desejadas_df['Crédito'] = ""
+    unificada_aba_devolucoes_colunas_desejadas_df['Histórico'] = ""
+    unificada_aba_devolucoes_colunas_desejadas_df['H1'] = "S/"
+    
+    #print(unificada_aba_recebidas_colunas_desejadas_df)
+    #if (unificada_aba_devolucoes_colunas_desejadas_df == 0).all().all():
+    #    print('zerado')
+    #else:
+    #    print(unificada_aba_devolucoes_colunas_desejadas_df)
+    
+    
     #alterar nome de variavel para finalizar a manipulacao geral (foi idicionado como a versao 2)
-    unificada_aba_recebidas_v2_df = unificada_aba_recebidas_colunas_excluir_colunas_df
-    unificada_aba_devolucoes_v2_df = unificada_aba_devolucoes_colunas_excluir_colunas_df
+    unificada_aba_recebidas_v2_df = unificada_aba_recebidas_colunas_desejadas_df
+    unificada_aba_devolucoes_v2_df = unificada_aba_devolucoes_colunas_desejadas_df
+    #print(unificada_aba_recebidas_v2_df.to_string())
     #print(unificada_aba_devolucoes_v2_df.to_string())
+    
+    #ok
+    
+    
     #manipulação notas
 
     notas_columns_para_exclusive = ['Valor IRRF', 'Valor CSRF', 'Valor INSS', 'Valor ISS', 'Caução']
@@ -72,7 +118,7 @@ def selecionar_pasta_baixar():
     notas = notas[['CÓD', 'Débito', 'Crédito', 'Emissão', 'Valor', 'Histórico', 'Tipo', 'H1', 'Nº Nota Fiscal', 'Prestador']]
     notas['H1'] = 'Nº'
     notas['Crédito'] = '2.01.02.01.0001'
-
+    notas['Valor'] = pd.to_numeric(notas['Valor'], errors='coerce')
     notas['Valor'] = notas['Valor'].round(2)
     #notas['Histórico'] = '=CONCATENAR(H2;" ";I2;" ";J2;" ";K2)'
 
@@ -140,6 +186,7 @@ def selecionar_pasta_baixar():
 
     # Selecionar colunas relevantes
     impostos = impostos[['CÓD', 'Débito', 'Crédito', 'Emissão', 'Valor', 'Histórico', 'H1', 'Tipo', 'Nº Nota Fiscal', 'Prestador']]
+    impostos['Valor'] = pd.to_numeric(impostos['Valor'], errors='coerce')
     impostos['Valor'] = impostos['Valor'].round(2)
     #impostos['Histórico'] = '=CONCATENAR(H2;" ";I2;" ";J2;" ";K2)'
 
@@ -152,6 +199,7 @@ def selecionar_pasta_baixar():
     caucao = caucao[caucao['Caução'] != 0]
     caucao = caucao.rename(columns={'Caução': 'Valor'})
     caucao = caucao[['CÓD', 'Débito', 'Crédito', 'Emissão', 'Valor', 'Histórico', 'H1', 'Tipo', 'Nº Nota Fiscal', 'Prestador']]
+    caucao['Valor'] = pd.to_numeric(caucao['Valor'], errors='coerce')
     caucao['Valor'] = caucao['Valor'].round(2)
     caucao['H1'] = 'RETENÇÃO CONTRATUAL S/'
     #caucao['Histórico'] = '=CONCATENAR(H2;" ";I2;" ";J2;" ";K2)'
@@ -166,11 +214,11 @@ def selecionar_pasta_baixar():
     #print(devolucoes.to_string())
 
     devolucoes = devolucoes[['CÓD', 'Débito', 'Crédito', 'Emissão', 'Valor', 'Histórico', 'Natureza Da OP.', 'H1', 'Tipo', 'Nº Nota Fiscal', 'Prestador']]
+    devolucoes['Valor'] = pd.to_numeric(devolucoes['Valor'], errors='coerce')
     devolucoes['Valor'] = devolucoes['Valor'].round(2)
     #caucao['Histórico'] = '=CONCATENAR(H2;" ";I2;" ";J2;" ";K2)'
 
     # Obtém o carimbo de data/hora atual
-
 
     writer = pd.ExcelWriter(caminho_unificada_baixar_concat, engine='xlsxwriter')
     notas.to_excel(writer, sheet_name='Notas')
@@ -180,7 +228,7 @@ def selecionar_pasta_baixar():
     writer.close()
     janela.destroy()
     messagebox.showinfo('Gerador de Cargas', 'Arquivo gerado com sucesso! Agora é só copiar do arquivo gerado em excel para a Carga!')
-
+    
 janela = tk.Tk()
 janela.title('Gerador de Cargas')
 #janela.geometry('300x90')
@@ -188,19 +236,12 @@ janela.title('Gerador de Cargas')
 btn_selecionar = tk.Button(janela, text="Selecionar unificada", command=selecionar_arquivo)
 btn_selecionar.pack(padx=10, pady=(10, 5))
 
-
 btn_baixar_unificada = tk.Button(janela, text="Baixar Carga", command=selecionar_pasta_baixar)
 btn_baixar_unificada["state"] = tk.DISABLED
 btn_baixar_unificada.pack(padx=(10), pady=(5, 10))
 
 janela.mainloop()
 
+
+#implementar depois
 # quero que crie um campo que quando a pessoa selecione o arquivo (deixar pra selecionar só em excel), ficar escrito no campo o caminho. e que a pessoa consiga baixar tambem só adicionando no campo o caminho.
-#
-# OK tambem quero que o segundo botao so fique habilitado se selecionar o arquivo.
-#
-# quero tambem que quando a pessoa baixar colocar uma mensagem.
-
-
-
-
